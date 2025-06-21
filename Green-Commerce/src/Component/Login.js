@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import "../Css/Login.css";
 import { Link, useNavigate } from "react-router-dom";
-
-// import toast
 import { toast } from "react-toastify";
 
 function Login() {
@@ -14,26 +12,29 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/login", {
+      const response = await fetch("http://localhost:8080/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
+
       const result = await response.json();
 
       if (!result.success) {
-        // error toast
         return toast.error(result.message || "Login failed", {
           position: "top-right"
         });
       }
 
-      // success toast
+      // ✅ Store user info
+      localStorage.setItem("jwtToken", result.token);
+      localStorage.setItem("user", JSON.stringify(result.user));
+      localStorage.setItem("email", result.user.email);
+
       toast.success("Logged in successfully!", {
         position: "top-right"
       });
 
-      localStorage.setItem("jwtToken", result.token);
       navigate("/");
     } catch (err) {
       console.error("Login error:", err);

@@ -1,33 +1,32 @@
-const express=require('express');
+const express = require('express');
 const dbconnect = require('./database/mongodb');
 const cors = require('cors');
-const path=require('path')
-const app=express();
+const path = require('path');
+require('dotenv').config();
+
+const app = express();
+
 app.use(express.json());
 app.use(cors());
-
-// 1) expose the uploads folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-require('dotenv').config();
-const PORT=process.env.PORT;
 
-app.listen(PORT,(req,res)=>{
-    console.log(`app started at ${PORT}`);
-})
+const PORT = process.env.PORT || 5000;
 
-app.get("/",(req,res)=>{
-    res.send(`app started at ${PORT}`);
-})
+// Routes
+const groupRoutes = require('./routes/group');
+const login = require('./routes/Login');
+const signup = require('./routes/Signup');
+const product = require('./routes/ProductManagement');
 
+app.get("/", (req, res) => {
+  res.send(`app started at ${PORT}`);
+});
 
-const login =require("./routes/Login.js");
-const Signup=require("./routes/Signup.js");
-const addproduct=require("./routes/ProductManagement.js");
+app.use('/group', groupRoutes);
 app.use(login);
-app.use(Signup);
-app.use(addproduct);
+app.use(signup);
+app.use(product);
 
 dbconnect();
 
-
-
+module.exports = app; // ✅ export for server.js

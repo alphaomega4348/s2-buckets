@@ -9,7 +9,7 @@ import Headergreen from './Headergreen';
 import Rewards from './Rewards';
 import { useEffect } from 'react';
 
-const IMAGE_BASE = 'http://localhost:5000/uploads'; 
+const IMAGE_BASE = 'http://localhost:8080/uploads'; 
 
 
 
@@ -21,7 +21,7 @@ export default function ProductPage() {
             // define an async fetcher
             const fetchProducts = async () => {
                 try {
-                    const res = await fetch("http://localhost:5000/getproducts");
+                    const res = await fetch("http://localhost:8080/getproducts");
                     if (!res.ok) {
                         throw new Error(`Server responded ${res.status}`);
                     }

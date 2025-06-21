@@ -5,7 +5,7 @@ import '../Css/navbargreen.css';
 import { Link } from 'react-router-dom';
 // import products from '../assets/Products';
 import SustainabilityReportsSection from './Sustainability';
-const IMAGE_BASE = 'http://localhost:5000/uploads';
+const IMAGE_BASE = 'http://localhost:8080/uploads';
 const leftFilterDefs = [
     { key: 'plasticFree', label: 'Plastic-Free' },
     { key: 'fscCertified', label: 'FSC Certified' },
@@ -230,7 +230,7 @@ export default function GreenProducts({ description, topN = 5 }) {
         // define an async fetcher
         const fetchProducts = async () => {
             try {
-                const res = await fetch("http://localhost:5000/getproducts");
+                const res = await fetch("http://localhost:8080/getproducts");
                 if (!res.ok) {
                     throw new Error(`Server responded ${res.status}`);
                 }

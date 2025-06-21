@@ -138,7 +138,7 @@ export default function SellerSection() {
             payload.append("grade", modalGrade);
           }
     try {
-      const res = await fetch("http://127.0.0.1:5000/addproduct", {
+      const res = await fetch("http://127.0.0.1:8080/addproduct", {
         method: "POST",
         body: payload,
       });

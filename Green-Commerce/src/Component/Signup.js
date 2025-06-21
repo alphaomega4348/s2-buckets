@@ -11,7 +11,7 @@ function Signup() {
     const [password, setpassword] = useState("");
 
     const submit = () => {
-        const resposne = fetch(`http://localhost:5000/signup`, {
+        const resposne = fetch(`http://localhost:8080/signup`, {
             "method": "post",
             headers: {
                 "Content-Type": "Application/json"
