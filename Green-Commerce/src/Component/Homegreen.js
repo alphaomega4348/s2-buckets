@@ -9,11 +9,7 @@ function Homegreen() {
     <>
     <div className="homeg">
       <div className="home__containerg">
-        {/* <img
-          className="home__imageg"
-          src="https://github.com/Night-Howler14/Project-HackOn/blob/main/Green.png?raw=true"
-          alt=""
-        /> */}
+        {}
         <ImageSliderGreen/>
         </div>
         <br></br>

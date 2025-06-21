@@ -1,27 +1,13 @@
-import React, { useState } from "react";
+// src/Component/Subtotal.js
+import React from "react";
 import "../Css/Subtotal.css";
 import CurrencyFormat from "react-currency-format";
 import { useStateValue } from "../StateProvider";
-import { getBasketTotal } from "./reducer";
+import { getBasketTotal } from "./Reducer";
 import { Link } from "react-router-dom";
-// import Orders from "./Orders";
 
 const Subtotal = () => {
-  const [{ basket, history }, dispatch] = useStateValue();
-
-  const handleProceed = () => {
-    if (basket.length > 0) {
-      // Check if the basket is not empty
-      dispatch({
-        type: "ADD_TO_HISTORY",
-        items: basket,
-      });
-
-      dispatch({
-        type: "CLEAR_BASKET",
-      });
-    }
-  };
+  const [{ basket }] = useStateValue();
 
   return (
     <div className="subtotal">
@@ -32,8 +18,7 @@ const Subtotal = () => {
               Subtotal ({basket?.length} items): <strong>{value}</strong>
             </p>
             <small className="subtotal__gift">
-              <input type="checkbox" className="checkbox" /> This order contains
-              a gift
+              <input type="checkbox" className="checkbox" /> This order contains a gift
             </small>
           </>
         )}
@@ -41,16 +26,16 @@ const Subtotal = () => {
         value={getBasketTotal(basket)}
         displayType="text"
         thousandSeparator={true}
-        prefix={"$"}
+        prefix={"₹"}
       />
       {basket.length > 0 ? (
-        <Link style={{ textDecoration: "none" }} to="/thanks">
-          <button className="proceed" onClick={handleProceed}>
+        <Link style={{ textDecoration: "none" }} to="/delivery">
+          <button className="proceed">
             Proceed to Buy
           </button>
         </Link>
       ) : (
-        <button className="proceed" disabled={true}>
+        <button className="proceed" disabled>
           Proceed to Buy
         </button>
       )}

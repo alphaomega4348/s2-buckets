@@ -9,7 +9,6 @@ import Checkout from "./Component/Checkout";
 import Login from "./Component/Login";
 import Headergreen from "./Component/Headergreen";
 import NavBarg from "./Component/navbargreen";
-import OrderPage from "./Component/OrderPage";
 import OrderConfirmationWrapper from "./Component/OrderConfirmationWrapper";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -36,31 +35,10 @@ import GroupOrderSetup from "./Component/GroupOrderSetup";
 import MyGroups from "./Component/MyGroups";
 import NearbyGroups from "./Component/NearbyGroups";
 
-import ProtectedRoute from "./Auth/ProtectedRoute"; // ✅ Import ProtectedRoute
+import ProtectedRoute from "./Auth/ProtectedRoute";
+import OrderPageWrapper from "./Component/OrderPageWrapper";
+import MyOrders from "./Component/MyOrders";
 
-const ecoCartItems = [
-  {
-    productName: 'Reusable Bamboo Toothbrush - 4 Pack',
-    brand: 'GreenSmile',
-    image: 'https://brownliving.in/cdn/shop/files/sustainable-bamboo-toothbrush-with-charcoal-bristles-adults-pack-of-4-by-oiko-at-brownliving-344070.png?v=1745430490&width=1000',
-    quantity: 2,
-    price: 349,
-  },
-  {
-    productName: 'Organic Cotton Grocery Bags - Set of 6',
-    brand: 'EcoRight',
-    image: 'https://m.media-amazon.com/images/I/71B56Of6vTL._SL1500_.jpg',
-    quantity: 1,
-    price: 599,
-  },
-  {
-    productName: 'Compostable Biodegradable Garbage Bags - 30L',
-    brand: 'GreenPolly',
-    image: 'https://m.media-amazon.com/images/I/41zGNEYgBZL._AC_UF1000,1000_QL80_.jpg',
-    quantity: 1,
-    price: 289,
-  },
-];
 
 function App() {
   return (
@@ -92,9 +70,27 @@ function App() {
           <Route path="/product" element={[<Headergreen />, <NavBarg />, <ProductDetails />, <Footer />]} />
           <Route path="/product1" element={[<Headergreen />, <NavBarg />, <ProductDetails1 />, <Footer />]} />
           <Route path="/product/:id" element={<ProductPage />} />
-          <Route path="/delivery" element={<OrderPage cartItems={ecoCartItems} />} />
 
           {/* ✅ Protected Routes */}
+          <Route
+  path="/my-orders"
+  element={
+    <ProtectedRoute>
+      <Header />
+      <MyOrders />
+      <Footer />
+    </ProtectedRoute>
+  }
+/>
+          <Route
+  path="/delivery"
+  element={
+    <ProtectedRoute>
+      <OrderPageWrapper />
+    </ProtectedRoute>
+  }
+/>
+          
           <Route
             path="/order-confirmation"
             element={

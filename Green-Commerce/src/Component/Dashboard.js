@@ -16,31 +16,13 @@ import badge2 from "../assets/badge22.png";
 import badge3 from "../assets/badge3.png";
 import badge4 from "../assets/badge4.png";
 
-export default function Dashboard() {
-  const plasticData = [
-    { name: 'Product 1', percentage: 20 },
-    { name: 'Product 2', percentage: 60 },
-    { name: 'Product 3', percentage: 25 },
-    { name: 'Product 4', percentage: 100 },
-    { name: 'Product 5', percentage: 50 },
-    { name: 'Product 6', percentage: 60 },
-    { name: 'Product 7', percentage: 80 },
-  ];
-  const data = [
-    { month: 'Jan', value: 50 },
-    { month: 'Feb', value: 60 },
-    { month: 'Apr', value: 55 },
-    { month: 'May', value: 65 },
-    { month: 'Jun', value: 70 },
-    { month: 'Sep', value: 85 },
-    { month: 'Dec', value: 95 },
-  ];
+import axios from 'axios';
 
-  const categories = [
-    { label: 'Home', pct: 72 },
-    { label: 'Lifestyle', pct: 45 },
-    { label: 'Personal Care', pct: 60 },
-  ];
+export default function Dashboard() {
+  const [plasticData, setPlasticData] = useState([]);
+  const [data, setData] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [co2Saved, setCo2Saved] = useState(0);
 
   const badges = [
     { name: 'Eco Rookie', icon: badge1 },
@@ -49,8 +31,25 @@ export default function Dashboard() {
     { name: 'Planet Guardian', icon: badge4 },
   ];
 
-  // which badge is “current”
   const currentBadgeIndex = 2;
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      const email = localStorage.getItem('email');
+      try {
+        const res = await axios.get(`http://localhost:8080/user-dashboard?email=${email}`);
+        const { plasticReductionList, ecoTrend, categoryStats, totalCo2Saved } = res.data;
+        setPlasticData(plasticReductionList);
+        setData(ecoTrend);
+        setCategories(categoryStats);
+        setCo2Saved(totalCo2Saved);
+      } catch (err) {
+        console.error("Failed to load dashboard data", err);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const cardStyle = {
     backgroundColor: '#fff',
@@ -184,7 +183,7 @@ export default function Dashboard() {
             <circle cx="100" cy="100" r="6" fill="#111" />
           </svg>
           <div style={{ marginTop: -8 }}>
-            <div style={{ fontSize: 32, fontWeight: 'bold' }}>5.2t</div>
+            <div style={{ fontSize: 32, fontWeight: 'bold' }}>{co2Saved}t</div>
             <div style={textGray}>Total CO₂ Saved</div>
           </div>
         </div>
@@ -235,7 +234,6 @@ export default function Dashboard() {
         {/* Rewards */}
         <RewardEarned />
       </div>
-
       {/* 2 & 3. Category and Badge Tracker side by side */}
       <div style={{ display: 'flex', marginTop: '-35px' }}>
         {/* Category Dials */}

@@ -8,6 +8,7 @@ import EcoBadge from './EcoBadge';
 import Headergreen from './Headergreen';
 import Rewards from './Rewards';
 import { useEffect } from 'react';
+import { useStateValue } from '../StateProvider';
 
 const IMAGE_BASE = 'http://localhost:8080/uploads'; 
 
@@ -16,6 +17,22 @@ const IMAGE_BASE = 'http://localhost:8080/uploads';
 export default function ProductPage() {
     const [products, setProducts] = useState([]);
         const [error, setError] = useState(null);
+        const [, dispatch] = useStateValue();
+        const addToBasket = () => {
+            dispatch({
+              type: "ADD_TO_BASKET",
+              item: {
+                id: product._id,
+                title: product.productName,
+                image: product.productImage || src,
+                price: product.price,
+                rating: 4, // You can replace this with actual rating data if available
+                badge_id: product.badge_id || "", // if this is in your data
+              },
+            });
+          
+            console.log("Product added to basket:", product.productName);
+          };
     
         useEffect(() => {
             // define an async fetcher
@@ -169,7 +186,7 @@ export default function ProductPage() {
                             cursor: 'pointer',
                             alignSelf: 'flex-start'
                         }}
-                        onClick={() => console.log(`Add ${product.name} to cart`)}
+                        onClick={() => addToBasket()}
                     >
                         Add to cart
                     </button>

@@ -2,7 +2,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const app = require('./index');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 const server = http.createServer(app);
 
