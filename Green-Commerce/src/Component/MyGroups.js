@@ -28,8 +28,8 @@ const MyGroups = () => {
   };
 
   return (
-    <div className="my-groups-container" style={{ padding: '30px', maxWidth: '1000px', margin: 'auto' }}>
-      <h1 style={{ fontSize: '26px', marginBottom: '20px' }}>📦 My Group Orders</h1>
+    <div className="my-groups-container" style={{ padding: '30px', maxWidth: '1000px', margin: 'auto', fontFamily: 'Arial, sans-serif' }}>
+      <h1 style={{ fontSize: '26px', marginBottom: '20px', color: '#232f3e' }}>📦 My Group Orders</h1>
 
       <button
         onClick={() => navigate('/')}
@@ -61,14 +61,26 @@ const MyGroups = () => {
         </div>
       ) : (
         <div style={{ display: 'grid', gap: '16px' }}>
-          {groups.map((group, i) =>
-            <GroupCard
-              key={i}
-              group={group}
-              currentUser={currentUser}
-              onLeave={handleLeaveGroup}
-            />
-          )}
+          {groups.map((group, i) => (
+            <div key={i} style={{
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              padding: '16px',
+              backgroundColor: '#fff',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+            }}>
+              <GroupCard
+                group={group}
+                currentUser={currentUser}
+                onLeave={handleLeaveGroup}
+              />
+              {group.locationName && (
+                <p style={{ fontSize: '14px', color: '#555', marginTop: '8px' }}>
+                  📍 <strong>Location:</strong> {group.locationName}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

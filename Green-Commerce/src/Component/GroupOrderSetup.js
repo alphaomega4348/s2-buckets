@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../Css/GroupOrder.css';
 import axios from 'axios';
@@ -11,10 +11,42 @@ const GroupOrderSetup = () => {
   const [deadlineDays, setDeadlineDays] = useState(3);
   const [showBadge, setShowBadge] = useState(false);
   const [groupCount, setGroupCount] = useState(0);
+  const [coords, setCoords] = useState(null);
+  const [locationName, setLocationName] = useState('');
 
   const email = localStorage.getItem("email");
 
   const fakeGroupLink = `https://green-commerce.com/group/${encodeURIComponent(groupName.replace(/\s+/g, '-').toLowerCase())}`;
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setCoords({ lat: latitude, lng: longitude });
+
+        // Reverse Geocoding
+        try {
+          const response = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyCliTDgdPUC04xTYS6RDXsbbKIYR5Ir5W0`
+          );
+          const data = await response.json();
+          if (data.status === 'OK') {
+            const address = data.results[0].formatted_address;
+            setLocationName(address);
+          } else {
+            setLocationName('Location not found');
+          }
+        } catch (error) {
+          console.error("Reverse geocoding failed:", error);
+          setLocationName('Error getting location');
+        }
+      },
+      (err) => {
+        console.error("Location access denied", err);
+        alert("Location permission is required to create a group.");
+      }
+    );
+  }, []);
 
   const getDeadlineDate = () => {
     const date = new Date();
@@ -28,6 +60,10 @@ const GroupOrderSetup = () => {
       return navigate("/login");
     }
 
+    if (!coords) {
+      return alert("Location not available yet.");
+    }
+
     const deadline = getDeadlineDate();
     const newGroup = {
       name: groupName,
@@ -35,6 +71,9 @@ const GroupOrderSetup = () => {
       deadline,
       cartItems,
       members: [email],
+      latitude: coords.lat,
+      longitude: coords.lng,
+      locationName
     };
 
     try {
@@ -56,23 +95,26 @@ const GroupOrderSetup = () => {
       <p>Invite friends to place a group order together and save shipping + earn eco rewards!</p>
 
       <div className="group-input">
-        <label htmlFor="groupName">Group Name:</label>
+        <label>Group Name:</label>
         <input
           type="text"
-          id="groupName"
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
         />
       </div>
 
       <div className="group-input">
-        <label htmlFor="deadline">Join Deadline (days):</label>
+        <label>Join Deadline (days):</label>
         <input
           type="number"
-          id="deadline"
           value={deadlineDays}
           onChange={(e) => setDeadlineDays(e.target.value)}
         />
+      </div>
+
+      <div className="group-input">
+        <label>Your Location:</label>
+        <input type="text" value={locationName || "Detecting..."} readOnly />
       </div>
 
       <div className="group-cart">
@@ -106,7 +148,7 @@ const GroupOrderSetup = () => {
 
       {showBadge && (
         <div className="badge-modal-overlay" onClick={() => setShowBadge(false)}>
-          <div className="badge-modal" onClick={e => e.stopPropagation()}>
+          <div className="badge-modal" onClick={(e) => e.stopPropagation()}>
             <img
               src="https://cdn-icons-png.flaticon.com/512/763/763673.png"
               alt="Group Badge"

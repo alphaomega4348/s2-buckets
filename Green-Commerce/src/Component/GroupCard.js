@@ -37,6 +37,9 @@ const GroupCard = ({ group, currentUser, onLeave }) => {
       </div>
 
       <div className="group-card-body">
+        {group.locationName && (
+          <p><strong>📍 Location:</strong> {group.locationName}</p>
+        )}
         <p><strong>Members:</strong> {group.members.length}</p>
         <p><strong>Deadline:</strong> {new Date(group.deadline).toLocaleDateString()}</p>
         <p><strong>Shared Link:</strong> <a href={group.link} target="_blank" rel="noreferrer">{group.link}</a></p>
