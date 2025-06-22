@@ -12,6 +12,7 @@ import {
   LabelList,
   Cell,
 } from "recharts";
+import { FaCheckCircle, FaMapMarkerAlt, FaPlusCircle } from "react-icons/fa";
 
 const faqItems = [
   {
@@ -22,7 +23,41 @@ const faqItems = [
   {
     question: "How group orders work ?",
     answer:
-      "shivam part",
+      <>
+      <section style={{ display: 'flex', alignItems: 'flex-start', marginTop: 20 }}>
+        <FaPlusCircle size={24} style={{ marginRight: 12, color: '#22c55e' }} />
+        <div>
+          <strong>1. Start a Group Order</strong>
+          <p>Click “Start Group Order” on your cart page, then choose “Create” or “Join Nearby.”</p>
+        </div>
+      </section>
+
+      <section style={{ display: 'flex', alignItems: 'flex-start', marginTop: 20 }}>
+        <FaCheckCircle size={24} style={{ marginRight: 12, color: '#10b981' }} />
+        <div>
+          <strong>2. Create a Group</strong>
+          <p>Fill in name, deadline, location & review your cart.  
+          We POST to <code>/group/create</code> (makes the group) then to <code>/place-order</code> (records your order).</p>
+        </div>
+      </section>
+
+      <section style={{ display: 'flex', alignItems: 'flex-start', marginTop: 20 }}>
+        <FaMapMarkerAlt size={24} style={{ marginRight: 12, color: '#3b82f6' }} />
+        <div>
+          <strong>3. Join a Group</strong>
+          <p>Browse nearby groups (via <code>/group/nearby</code>).  
+          Click “Join Group” to POST to <code>/group/join/:id</code>, then to <code>/place-order</code>.</p>
+        </div>
+      </section>
+
+      <section style={{ marginTop: 30 }}>
+        <strong>Data Stored:</strong>
+        <ul style={{ lineHeight: 1.6 }}>
+          <li><code>Group</code>: name, link, deadline, items, members, location</li>
+          <li><code>Order</code>: userEmail, items, totalAmount, ecoPackaging, placedAt</li>
+        </ul>
+      </section>
+      </>
   },
   {
     question: "What is Eco Grade and How its Important ?",
