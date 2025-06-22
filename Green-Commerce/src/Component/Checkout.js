@@ -193,15 +193,11 @@ const styles = {
   },
 };
 function Checkout() {
-  
-
   const [{ basket }, dispatch] = useStateValue();
- 
-
   const [selectedItems, setSelectedItems] = useState(
     basket.reduce((acc, _, idx) => ({ ...acc, [idx]: true }), {})
   );
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   const [ecoPackaging, setEcoPackaging] = useState(false);
   const [savedAddress, setSavedAddress] = useState(""); // NEW
   const [address, setAddress] = useState("");
@@ -216,6 +212,7 @@ function Checkout() {
   const [blinkCoupon, setBlinkCoupon] = useState(false);
   const couponInputRef = React.useRef(null);
   const [showEcoModal, setShowEcoModal] = useState(false);
+  const [showGroupModal, setShowGroupModal] = useState(false);
 
   const couponSectionRef = useRef(null);
   
@@ -270,6 +267,10 @@ function Checkout() {
       console.error('Order submission failed', err);
       alert('Something went wrong while placing your order.');
     }
+  };
+
+  const handleStartGroupOrder = () => {
+    setShowGroupModal(true);
   };
 
   React.useEffect(() => {
@@ -656,7 +657,7 @@ function Checkout() {
                 <div style={styles.totalRow}>
                   <span>Total Amount</span>
                   <span>
-                    ₹{typeof totalpayment === "number" ? totalpayment : itemTotalAfterDiscount}
+                    ₹{(typeof totalpayment === "number" ? totalpayment : itemTotalAfterDiscount).toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -669,19 +670,88 @@ function Checkout() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.38 }}
             >
-              <button style={{ ...styles.button, ...styles.btnYellow }}
+              <button
+                style={{ ...styles.button, ...styles.btnYellow }}
                 onClick={handlePlaceOrder}
-
               >
                 Place Standard Order
               </button>
-              <button style={{ ...styles.button, ...styles.btnGreen }}
-                // onClick={handleStartGroupOrder}
-
+              <button
+                style={{ ...styles.button, ...styles.btnGreen }}
+                onClick={handleStartGroupOrder}
               >
                 Start Group Order
               </button>
             </motion.div>
+
+            {/* Group Order Modal */}
+            {showGroupModal && (
+              <div
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  background: "rgba(0,0,0,0.18)",
+                  zIndex: 10000,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onClick={() => setShowGroupModal(false)}
+              >
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: 18,
+                    boxShadow: "0 8px 38px #9de4b5aa",
+                    padding: 32,
+                    width: "90%",
+                    maxWidth: 360,
+                    textAlign: "center",
+                    position: "relative",
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h2 style={{ marginBottom: 12 }}>Start Group Order</h2>
+                  <p style={{ marginBottom: 20 }}>
+                    Choose how you'd like to participate:
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <button
+                      style={{ padding: "10px", borderRadius: 8, fontWeight: 600 }}
+                      onClick={() => {
+                        setShowGroupModal(false);
+                        navigate('/group-order-setup', { state: { items: basket } });
+                      }}
+                    >
+                      🛠 Create a Group Order
+                    </button>
+                    <button
+                      style={{ padding: "10px", borderRadius: 8, fontWeight: 600 }}
+                      onClick={() => {
+                        setShowGroupModal(false);
+                        navigate('/nearby-groups');
+                      }}
+                    >
+                      📍 Join Nearby Groups
+                    </button>
+                  </div>
+                  <button
+                    style={{
+                      position: "absolute",
+                      top: 12,
+                      right: 12,
+                      background: "transparent",
+                      border: "none",
+                      fontSize: 18,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => setShowGroupModal(false)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </motion.div>
 

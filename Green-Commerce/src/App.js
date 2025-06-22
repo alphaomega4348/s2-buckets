@@ -73,6 +73,7 @@ function App() {
           <Route path="/product" element={[<Headergreen />, <NavBarg />, <ProductDetails />, <Footer />]} />
           <Route path="/product1" element={[<Headergreen />, <NavBarg />, <ProductDetails1 />, <Footer />]} />
           <Route path="/product/:id" element={<ProductPage />} />
+          <Route path="/standardDashboard" element={[<Headergreen />, <Dashboard />, <Footer />]} />
           {/* ✅ Protected Routes */}
           <Route
             path="/my-orders"

@@ -8,9 +8,7 @@ import {
   XAxis,
   CartesianGrid,
   Tooltip,
-  ComposedChart,
-  Legend,
-  Brush,
+  BarChart,
   Bar,
   YAxis,
 } from 'recharts';
@@ -77,6 +75,13 @@ export default function Dashboard() {
   const email = localStorage.getItem('email');
 
   const [plasticData, setPlasticData]     = useState([]);
+  // Filter out negative-percentage items for the eco-chart
+  const filteredPlasticData = plasticData.filter(item => item.percentage >= 0);
+  // Use productId for chart labels
+  const chartDataById = filteredPlasticData.map(item => ({
+    ...item,
+    displayId: item.productId || item.id || item.name  // fallback if id is missing
+  }));
   const [ecoTrend, setEcoTrend]           = useState([]);
   const [categories, setCategories]       = useState([]);
   const [totalCo2Saved, setTotalCo2Saved] = useState(0);
@@ -94,6 +99,7 @@ export default function Dashboard() {
   ];
   const [totalProductsOrdered, setTotalProductsOrdered] = useState(0);
   const [badgeScore, setBadgeScore] = useState(0);
+  const [totalGroups, setTotalGroups] = useState(0);
 
   useEffect(() => {
     if (!email) {
@@ -117,6 +123,7 @@ export default function Dashboard() {
         setTotalCo2Saved(json.totalCo2Saved || 0);
         setTotalProductsOrdered(json.totalProductsOrdered || 0);
         setBadgeScore(json.badgeScore || 0);
+        setTotalGroups(json.totalGroups || 0);
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -207,11 +214,16 @@ export default function Dashboard() {
     );
   };
 
-  // Compute badge tier dynamically based on badgeScore
+  // Normalize group contribution (maxing at 5 groups)
+  const groupWeight = Math.min(totalGroups / 5, 1);
+  // Final badge metric: give groups highest weight (60%) -- Ensure a minimum baseline of 10%
+  // Ensure a minimum baseline of 10%
+  const finalBadgeMetric = Math.max(0.1, groupWeight * 0.6 + badgeScore * 0.4);
+  // Compute badge tier dynamically based on finalBadgeMetric
   let currentBadgeIndex = 0;
-  if (badgeScore >= 0.8) currentBadgeIndex = 3;
-  else if (badgeScore >= 0.5) currentBadgeIndex = 2;
-  else if (badgeScore >= 0.2) currentBadgeIndex = 1;
+  if (finalBadgeMetric >= 0.8) currentBadgeIndex = 3;
+  else if (finalBadgeMetric >= 0.5) currentBadgeIndex = 2;
+  else if (finalBadgeMetric >= 0.2) currentBadgeIndex = 1;
 
   return (
     <div
@@ -291,9 +303,18 @@ export default function Dashboard() {
         <div style={{ ...cardStyle, width: '40%', alignItems: 'center', marginLeft: '16px' }}>
           <div style={titleStyle}>Category Wise Distribution</div>
           <div style={{ display: 'flex', gap: 24 }}>
-            {categories.map((c, idx) => (
-              <Dial key={c.label || idx} pct={c.pct} label={c.label} />
-            ))}
+            {
+              // Show top 5 categories with non-negative percentages, sorted descending
+              (() => {
+                const filteredCategories = categories
+                  .filter(c => c.pct >= 0)
+                  .sort((a, b) => b.pct - a.pct)
+                  .slice(0, 5);
+                return filteredCategories.map((c, idx) => (
+                  <Dial key={c.label || idx} pct={c.pct} label={c.label} />
+                ));
+              })()
+            }
           </div>
         </div>
 
@@ -387,16 +408,13 @@ export default function Dashboard() {
       <div style={{ ...cardStyle, marginTop: -25 }}>
         <div style={titleStyle}>% Plastic Reduced Per Item</div>
         <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart data={plasticData} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+          <BarChart data={chartDataById} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" angle={-30} textAnchor="end" height={60} interval={0} />
+            <XAxis dataKey="displayId" angle={-30} textAnchor="end" height={60} interval={0} />
             <YAxis />
             <Tooltip />
-            <Legend verticalAlign="top" />
-            <Bar dataKey="percentage" barSize={20} fill="#22c55e" />
-            <Line type="monotone" dataKey="percentage" stroke="#15803d" strokeWidth={2} dot={{ r: 3 }} />
-            <Brush dataKey="name" height={30} stroke="#2d6a4f" />
-          </ComposedChart>
+            <Bar dataKey="percentage" barSize={20} />
+          </BarChart>
         </ResponsiveContainer>
       </div>
 
@@ -465,10 +483,24 @@ export default function Dashboard() {
           <img src={badges[currentBadgeIndex].icon} alt="Medal" style={medalStyle}/>
           <h2>Congratulations!</h2>
           <div style={{ marginTop: 12, fontSize: 18, color: '#374151' }}>
-            Your Eco Score: <strong style={{ color: '#15803d' }}>{(badgeScore * 100).toFixed(0)}%</strong>
+            Your Eco Score: <strong style={{ color: '#15803d' }}>{(finalBadgeMetric * 100).toFixed(0)}%</strong>
           </div>
+            <div style={{ marginTop: 12, textAlign: 'left', fontSize: 14, color: '#374151', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <img src="https://png.pngtree.com/png-vector/20190214/ourmid/pngtree-people-icon-business-corporate-team-working-together-social-network-png-image_448364.jpg" alt="" style={{ width: 28, height: 28 }} />
+                <span style={{ fontSize: 16 }}><strong>Groups Joined:</strong> {totalGroups}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <img src="https://cdn-icons-png.flaticon.com/512/573/573378.png" alt="" style={{ width: 28, height: 28 }} />
+                <span style={{ fontSize: 16 }}><strong>Total CO₂ Saved:</strong> {totalCo2Saved} kg</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <img src="https://static.vecteezy.com/system/resources/thumbnails/027/800/271/small_2x/green-background-eco-friendly-logo-or-icon-eco-friendly-logo-vector.jpg" alt="" style={{ width: 28, height: 28 }} />
+                <span style={{ fontSize: 16 }}><strong>Products Ordered:</strong> {totalProductsOrdered}</span>
+              </div>
+            </div>
           <div style={{ marginTop: 8, fontSize: 14, color: '#6b7280' }}>
-            This score reflects your sustainability impact through plastic, CO₂, and chemical reductions.
+            This score reflects your sustainability impact through plastic reduction, CO₂ savings, and group participation.
           </div>
           {/* Confetti elements */}
           <div style={confettiContainerStyle}>
@@ -551,16 +583,16 @@ export default function Dashboard() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <img src="https://static.thenounproject.com/png/1497232-200.png" alt="Petrol Icon" style={{ width: 24, height: 24 }} />
-                    <span style={{ fontSize: 16, color: '#111827' }}>4.35 litres of petrol saved</span>
+                    <img src="https://static.thenounproject.com/png/1497232-200.png" alt="Petrol Icon" style={{ width: 32, height: 32 }} />
+                    <span style={{ fontSize: 18, color: '#111827' }}>4.35 litres of petrol saved</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <img src="https://www.shutterstock.com/image-vector/cng-gas-tank-icon-compressed-600nw-2526843447.jpg" alt="CNG Icon" style={{ width: 24, height: 24 }} />
-                    <span style={{ fontSize: 16, color: '#111827' }}>5 litres of CNG saved</span>
+                    <img src="https://www.shutterstock.com/image-vector/cng-gas-tank-icon-compressed-600nw-2526843447.jpg" alt="CNG Icon" style={{ width: 32, height: 32 }} />
+                    <span style={{ fontSize: 18, color: '#111827' }}>5 litres of CNG saved</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <img src="https://cdn-icons-png.flaticon.com/512/5974/5974156.png" alt="Recycle Icon" style={{ width: 24, height: 24 }} />
-                    <span style={{ fontSize: 16, color: '#111827' }}>3.5 kg of waste recycled</span>
+                    <img src="https://cdn-icons-png.flaticon.com/512/5974/5974156.png" alt="Recycle Icon" style={{ width: 32, height: 32 }} />
+                    <span style={{ fontSize: 18, color: '#111827' }}>3.5 kg of waste recycled</span>
                   </div>
                 </div>
               </div>

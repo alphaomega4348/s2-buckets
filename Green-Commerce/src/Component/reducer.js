@@ -1,23 +1,26 @@
 import React from "react";
 
-// Initial State
+// ✅ Load initial basket from localStorage if available
 export const initialState = {
-  basket: [],
+  basket: JSON.parse(localStorage.getItem("basket")) || [],
   history: [],
 };
 
-// Selector Function to Get Total Price
+// ✅ Selector Function to Get Total Price
 export const getBasketTotal = (basket) =>
   basket?.reduce((amount, item) => item.price + amount, 0);
 
-// Reducer Function
+// ✅ Reducer Function
 const Reducer = (state, action) => {
+  let newState;
+
   switch (action.type) {
     case "ADD_TO_BASKET":
-      return {
+      newState = {
         ...state,
         basket: [...state.basket, action.item],
       };
+      break;
 
     case "REMOVE_FROM_BASKET":
       const index = state.basket.findIndex(
@@ -28,29 +31,36 @@ const Reducer = (state, action) => {
       if (index >= 0) {
         newBasket.splice(index, 1);
       } else {
-        console.warn(`Cannot remove item (id: ${action.id}) — not found in basket.`);
+        console.warn(`Cannot remove item (id: ${action.id}) — not found.`);
       }
 
-      return {
+      newState = {
         ...state,
         basket: newBasket,
       };
+      break;
 
     case "ADD_TO_HISTORY":
-      return {
+      newState = {
         ...state,
         history: [...state.history, ...action.items],
       };
+      break;
 
     case "CLEAR_BASKET":
-      return {
+      newState = {
         ...state,
         basket: [],
       };
+      break;
 
     default:
       return state;
   }
+
+  // ✅ Persist basket to localStorage after each change
+  localStorage.setItem("basket", JSON.stringify(newState.basket));
+  return newState;
 };
 
 export default Reducer;
