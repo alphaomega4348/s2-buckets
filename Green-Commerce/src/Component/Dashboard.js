@@ -286,10 +286,10 @@ export default function Dashboard() {
       </div>
 
       {/* 2 & 3. Category and Badge Tracker side by side */}
-      <div style={{ display: 'flex', marginTop: '-35px' }}>
+      <div style={{ display: 'flex', marginTop: '-35px', gap: '16px' }}>
         {/* Category Dials */}
-        <div style={{ ...cardStyle, width: '40%', alignItems: 'center', marginRight: '-5px' }}>
-          <div style={titleStyle}>Category Dials</div>
+        <div style={{ ...cardStyle, width: '40%', alignItems: 'center', marginLeft: '16px' }}>
+          <div style={titleStyle}>Category Wise Distribution</div>
           <div style={{ display: 'flex', gap: 24 }}>
             {categories.map((c, idx) => (
               <Dial key={c.label || idx} pct={c.pct} label={c.label} />
@@ -298,7 +298,7 @@ export default function Dashboard() {
         </div>
 
         {/* Badge Tracker */}
-        <div style={{ ...cardStyle, alignItems: 'center', width: '60%' }}>
+        <div style={{ ...cardStyle, alignItems: 'center', width: '55%', paddingRight: '12px' }}>
           <div style={titleStyle}>Badge tracker</div>
           <style>{`
             @keyframes pulse {
@@ -317,7 +317,7 @@ export default function Dashboard() {
               alignItems: 'center',
               rowGap: 8,
               marginTop: 18,
-              marginRight: 100,
+              marginRight: 40,
              
             }}
           >
