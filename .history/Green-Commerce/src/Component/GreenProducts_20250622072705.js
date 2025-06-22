@@ -1,0 +1,652 @@
+
+import React, { useState, useMemo,useEffect } from 'react';
+import { FiSearch, FiMenu } from 'react-icons/fi';
+import { NavLink } from 'react-router-dom';
+import '../Css/navbargreen.css';
+import { Link } from 'react-router-dom';
+import cleaningcloth from "../assets/green products/cleaning/cleaningcloth.png"
+import Products from '../assets/Products';
+import SustainabilityReportsSection from './Sustainability';
+import SuggestGreenCarousel from "../Component/carosel/SuggestGreenCategory_carosel1"
+const IMAGE_BASE = 'http://localhost:8080/uploads';
+const leftFilterDefs = [
+    { key: 'plasticFree', label: 'Plastic-Free' },
+    { key: 'fscCertified', label: 'FSC Certified' },
+    { key: 'carbonNeutral', label: 'Carbon Neutral Shipping' },
+    { key: 'recycledMaterials', label: 'Recycled Materials' },
+];
+
+const Banner = () => (
+    <div style={{
+        backgroundColor: 'rgb(133, 191, 137)',
+        padding: '1rem',
+        borderRadius: '8px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '1rem',
+        marginBottom: '1rem',
+        animation: 'pulse 3s infinite'
+    }}>
+        <style>
+            {`@keyframes pulse { 0% { transform: scale(1) } 50% { transform: scale(1.02) } 100% { transform: scale(1) } }`}
+        </style>
+        <h2 style={{ color: '#2E7D32', margin: 0 }}>Green Essentials –</h2>
+        <h4 style={{ color: '#2E7D32', margin: 0 }}>Weekly Picks</h4>
+    </div>
+);
+const filterLabels = {
+    plasticFree: 'Plastic-Free',
+    fscCertified: 'FSC Certified',
+    carbonNeutral: 'Carbon Neutral Shipping',
+    recycledMaterials: 'Recycled Materials',
+};
+
+const ProductCard = ({ p }) => {
+    
+    // pull the filename off of the full Windows path
+    // inside ProductCard:
+    const filename = p.productImage?.split(/[/\\]/).pop() || "";
+    const src = `${IMAGE_BASE}/${filename}`;
+    
+
+    return (
+        <div style={{
+            position: 'relative',
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '1rem',
+            width: '90%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        }}>
+            {p.grade && (
+                <div style={{
+                    position: 'absolute',
+                    top: '8px',
+                    left: '8px',
+                    backgroundColor: '#C8E6C9',
+                    borderRadius: '50%',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.8rem',
+                    color: '#2E7D32'
+                }}>
+                    {p.grade}
+                </div>
+            )}
+
+            <img
+                src={p.productImage || src}
+                alt={p.productName}
+                onError={e => e.currentTarget.src = src}
+                style={{
+                    width: '100%',
+                    height: '150px',
+                    objectFit: 'contain',
+                    marginBottom: '1rem'
+                }}
+            />
+            
+            <h4 style={{
+                fontSize: '1rem',
+                fontWeight: 600,
+                textAlign: 'center',
+                margin: '0 0 0.5rem'
+            }}>
+                {p.productName}
+            </h4>
+
+            {/* Dynamic filter tags */}
+            <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                gap: '0.25rem',
+                fontSize: '0.8rem',
+                color: '#555',
+                flexGrow: 1
+            }}>
+                {Object.entries(p.filters)
+                    .filter(([_, isOn]) => isOn)
+                    .map(([key]) => (
+                        <span key={key} style={{ color: 'green' }}>
+                            {filterLabels[key]}
+                        </span>
+                    ))
+                }
+            </div>
+
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%',
+                marginTop: '0.5rem'
+            }}>
+                <span style={{ fontWeight: 'bold' }}> ₹ {p.price}</span>
+                <button
+                    onClick={() => console.log(`Add ${p.name} to cart`)}
+                    style={{
+                        backgroundColor: '#2E7D32',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '0.5rem 1rem',
+                        cursor: 'pointer',
+                        fontWeight: 600
+                    }}
+                >
+                    Add to Cart
+                </button>
+            </div>
+        </div>
+    );
+};
+
+  
+  
+
+export default function GreenProducts({ description, topN = 5 }) {
+  
+    const [products, setProducts] = useState([]);
+    const [recs, setRecs] = useState([]);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    
+    const [leftFilters, setLeftFilters] = useState({});
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const categories = useMemo(
+        () => Array.from(new Set(products.map(p => p.category))),
+        [products]
+    );
+
+    const toggleLeft = key =>
+        setLeftFilters(prev => ({ ...prev, [key]: !prev[key] }));
+
+    // const visible = products.filter(p =>
+    //     leftFilterDefs.every(f => !leftFilters[f.key] || p.filters[f.key]) &&
+    //     (!selectedCategory || p.category === selectedCategory)
+    // );
+    const productsMap = useMemo(
+        () => Object.fromEntries(products.map(p => [p._id, p])),
+        [products]
+    );
+
+  
+
+    const dataSource =
+     !description
+            ? products.slice(0,6)
+     : recs.map(r => productsMap[r._id]).filter(Boolean);
+
+
+    
+    const visible = dataSource.filter(p =>
+        leftFilterDefs.every(f => !leftFilters[f.key] || p.filters[f.key]) &&
+        (!selectedCategory || p.category === selectedCategory)
+      );
+    console.log("🌱 GreenProducts render:", {
+        description,
+        recs,
+    });
+
+    useEffect(() => {
+        if (!description) return;            // nothing to do until user searches
+        setLoading(true);
+        fetch('http://localhost:8000/recommend', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                product_name: description,
+                top_n: topN
+            }),
+        })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(body => {
+                // your endpoint returns { recommendations: [ { _id, productImage, description }, … ] }
+                
+                setRecs(body.recommendations);
+                console.log("recs ",recs);
+            })
+            .catch(err => {
+                console.error('Recommendation error:', err);
+                setError(err.message);
+            })
+            .finally(() => setLoading(false));
+    }, [description, topN]);
+
+    // if (!description) {
+    //     return <p>Type something in search and click the button to get recommendations.</p>;
+    // }
+    // if (loading) return <p>Loading recommendations…</p>;
+    // if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
+    // if (recs.length === 0) return <p>No recommendations found for “{description}”.</p>;
+   
+    useEffect(() => {
+        // define an async fetcher
+        const fetchProducts = async () => {
+            try {
+                const res = await fetch("http://localhost:8080/getproducts");
+                if (!res.ok) {
+                    throw new Error(`Server responded ${res.status}`);
+                }
+                const data = await res.json();
+                setProducts(data);
+                console.log("products are : ", products);
+            } catch (err) {
+                console.error("Failed to fetch products:", err);
+                setError(err.message);
+            }
+        };
+
+        fetchProducts();
+    }, []); // re-run whenever `third` changes
+
+    const [expanded, setExpanded] = useState(false);
+    const [hoveredItem, setHoveredItem] = useState(null);
+
+    const visibleCats = expanded ? categories : categories.slice(0,10);
+    // — STYLE OBJECTS —
+   
+
+    const pillNav = {
+        display: 'flex',
+        justifyContent: 'space-between',
+        gap: '0.6rem'
+    };
+    const pillButton = {
+        flex: 1,
+        padding: '0.6rem 0',
+        borderRadius: '999px',
+        border: '3px solid #4a8f4a',
+        background: 'white',
+        color: '#4a8f4a',
+        fontWeight: 600,
+        textAlign: 'center',
+        textDecoration: 'none',
+        boxShadow: '0 2px 6px rgba(74,143,74,0.3)',
+        transition: 'transform 0.2s, background 0.2s, color 0.2s'
+    };
+    const pillHover = {
+        transform: 'scale(1.05)',
+        background: '#4a8f4a',
+        color: 'white'
+    };
+
+    const sectionTitle = {
+        margin: 0,
+        fontSize: '1rem',
+        color: '#2d5a2d',
+        paddingBottom: '0.5rem',
+        borderBottom: '1px dashed #4a8f4a'
+    };
+
+    const chipsWrap = {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '0.5rem',
+        marginTop: '0.5rem'
+    };
+    const chipBase = {
+        padding: '0.5rem 1rem',
+        borderRadius: '20px',
+        border: '2px solid #888',
+        background: 'white',
+        cursor: 'pointer',
+        userSelect: 'none',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        transition: 'all 0.2s'
+    };
+    const chipActive = {
+        borderColor: '#357a38',
+        background: '#4a8f4a',
+        color: 'white',
+        boxShadow: '0 4px 8px rgba(74,143,74,0.4)'
+    };
+    const chipHover = {
+        transform: 'translateY(-2px)',
+        boxShadow: '0 6px 12px rgba(74,143,74,0.3)'
+    };
+
+    const quickTitle = { ...sectionTitle, marginTop: '1rem' };
+    const quickWrap = {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.6rem',
+        maxHeight: '320px',
+        overflowY: 'auto',
+        paddingRight: '0.2rem'
+    };
+    const thumb = {
+        width: '100%',
+        borderRadius: '8px',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        cursor: 'pointer'
+    };
+    const thumbHover = {
+        transform: 'scale(1.05)',
+        boxShadow: '0 6px 12px rgba(0,0,0,0.15)'
+    };
+    const sidebarStyle = {
+        width: '220px',
+        backgroundColor: '#f3f9f4',
+        borderRadius: '12px',
+        padding: '1rem',
+        boxShadow: expanded
+            ? '0 0 20px rgba(74,143,74,0.7)'
+            : '0 4px 12px rgba(0,0,0,0.05)',
+        position: 'sticky',
+        top: '1rem',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'box-shadow 0.3s, transform 0.3s',
+        transform: expanded ? 'translateY(-2px)' : 'translateY(0)',
+        overflow: 'hidden'
+    };
+
+    const headerStyle = {
+        fontSize: '1.2rem',
+        color: '#2d5a2d',
+        marginBottom: '0.75rem',
+        borderBottom: '1px solid #d1e7dd',
+        paddingBottom: '0.25rem',
+    };
+
+    const listContainerStyle = {
+        position: 'relative',
+        flexGrow: 1,
+    };
+
+    const listStyle = {
+        listStyle: 'none',
+        padding: 0,
+        margin: 0,
+    };
+
+    const itemBase = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0.5rem',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s, transform 0.2s',
+    };
+
+    const radioStyle = {
+        accentColor: '#4a8f4a',
+    };
+
+    const clearBtnStyle = {
+        marginTop: '1rem',
+        alignSelf: 'flex-end',
+        background: 'transparent',
+        border: '1px solid #4a8f4a',
+        padding: '0.5rem 1rem',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        color: '#4a8f4a',
+    };
+
+    const overlayStyle = {
+        content: '""',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '3rem',
+        background: 'linear-gradient(transparent, #f3f9f4)',
+        display: expanded ? 'none' : 'block',
+        pointerEvents: 'none',
+    };
+
+    const hintStyle = {
+        position: 'absolute',
+        bottom: '0.5rem',
+        width: '100%',
+        textAlign: 'center',
+        fontSize: '0.85rem',
+        color: '#4a8f4a',
+        pointerEvents: 'none',
+    };
+
+    // const sidebarStyle = {
+    //     width: '20%',
+    //     backgroundColor: '#ebf6eb',
+    //     borderRadius: '12px',
+    //     padding: '1rem',
+    //     fontFamily: "'Amazon Ember', 'Helvetica Neue', Arial, sans-serif",
+    //     boxShadow: '0 2px 6px rgba(74,143,74,0.3)',
+    //     display: 'flex',
+    //     flexDirection: 'column',
+    //     gap: '1.5rem',
+    //     position: 'sticky',
+    //     top: '1rem'
+    // };
+
+    const buttonGroup = {
+        display: 'flex',
+        gap: '0.5rem',
+        justifyContent: 'space-between'
+    };
+    const topButton = {
+        flex: 1,
+        padding: '0.5rem',
+        borderRadius: '999px',
+        border: '2px solid #4a8f4a',
+        background: 'white',
+        color: '#4a8f4a',
+        fontWeight: 600,
+        textAlign: 'center',
+        textDecoration: 'none'
+    };
+    const topButtonHover = {
+        background: '#4a8f4a',
+        color: 'white'
+    };
+
+    
+    const chipsContainer = {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '0.5rem'
+    };
+    const chipBase = {
+        padding: '0.4rem 0.8rem',
+        borderRadius: '16px',
+        border: '1px solid #999',
+        background: 'white',
+        cursor: 'pointer',
+        userSelect: 'none',
+        transition: 'all 0.2s'
+    };
+    const chipActive = {
+        background: '#4a8f4a',
+        color: 'white',
+        borderColor: '#3f7a3f'
+    };
+
+    const carousel = {
+        display: 'flex',
+        overflowX: 'auto',
+        gap: '0.5rem',
+        paddingBottom: '0.5rem',
+        marginTop: '0.5rem'
+    };
+    const thumbStyle = {
+        flex: '0 0 45px',
+        height: '45px',
+        borderRadius: '4px',
+        transition: 'transform 0.2s',
+        objectFit: 'cover',
+        cursor: 'pointer'
+      };
+
+
+   
+    return (
+        <div>
+            
+            <div style={{
+                display: 'flex',
+                gap: '1rem',
+                padding: '1rem',
+                alignItems: 'stretch',  // make both asides same height as main
+                backgroundColor: ' #E8F5E9',
+            }}>
+                {/* LEFT SIDEBAR: filters + mini picks */}
+                <aside style={sidebarStyle}>
+
+                    {/* TOP BUTTONS */}
+                    <div style={buttonGroup}>
+                        {[
+                            { to: '/seller', label: 'Seller' },
+                            { to: '/education', label: 'Education' },
+                            { to: '/sustain', label: 'Reports' }
+                        ].map(({ to, label }) => (
+                            <Link
+                                key={to}
+                                to={to}
+                                style={topButton}
+                                onMouseEnter={e => Object.assign(e.currentTarget.style, topButtonHover)}
+                                onMouseLeave={e => Object.assign(e.currentTarget.style, topButton)}
+                            >
+                                {label}
+                            </Link>
+                        ))}
+                    </div>
+
+                    {/* FILTER CHIPS */}
+                    <h4 style={sectionTitle}>Filters</h4>
+                    <div style={chipsContainer}>
+                        {leftFilterDefs.map(f => {
+                            const active = !!leftFilters[f.key];
+                            return (
+                                <div
+                                    key={f.key}
+                                    style={active ? { ...chipBase, ...chipActive } : chipBase}
+                                    onClick={() => toggleLeft(f.key)}
+                                >
+                                    {f.label}
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* QUICK PICKS CAROUSEL */}
+                    <h4 style={sectionTitle}>Quick Picks</h4>
+                    <div style={carousel}>
+                        {products.slice(0, 10).map(p => (
+                            <img
+                                key={p._id}
+                                src={p.productImage}
+                                alt={p.productName}
+                                style={thumbStyle}
+                                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
+                                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                            />
+                        ))}
+                    </div>
+
+                </aside>
+
+
+                {/* MAIN GRID */}
+                <main style={{ flex: 1 }}>
+                    <Banner />
+
+                    <div style={{
+                        display: 'grid',
+
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                        gap: '1.5rem',
+                        gridTemplateColumns: 'repeat(3, 1fr)',  // exactly 3 columns
+                        // justifyItems: 'center',      // center each card in its cell
+                        // alignItems: 'start',         // cards start at top of cell
+                        // padding: '1rem 0'
+                        marginRight: '10px',
+                        gridAutoFlow: 'row dense',
+                    }}
+
+                    >
+
+                        {visible
+                            .filter(p => !!p.productImage)
+                            // if description, dataSource is full rec list; if no description, it's already sliced to 6
+                            .map(p => (
+                                <Link key={p._id} to={`/product/${p._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <ProductCard p={p} />
+                                </Link>
+                            ))}
+
+                    </div>
+                </main>
+
+
+                {/* RIGHT BAR: category selector */}
+
+               <aside
+      style={sidebarStyle}
+      onMouseEnter={() => setExpanded(true)}
+      onMouseLeave={() => setExpanded(false)}
+    >
+      <h3 style={headerStyle}>Categories</h3>
+
+      <div style={listContainerStyle}>
+        <ul style={listStyle}>
+          {visibleCats.map(cat => {
+            const isHover = hoveredItem === cat;
+            const itemStyle = {
+              ...itemBase,
+              backgroundColor: isHover ? '#eaf6eb' : 'transparent',
+              transform: isHover ? 'scale(1.02)' : 'scale(1)',
+            };
+            return (
+              <li
+                key={cat}
+                style={itemStyle}
+                onClick={() => setSelectedCategory(cat)}
+                onMouseEnter={() => setHoveredItem(cat)}
+                onMouseLeave={() => setHoveredItem(null)}
+              >
+                <span>{cat}</span>
+                <input
+                  type="radio"
+                  name="category"
+                  checked={selectedCategory === cat}
+                  onChange={() => {}}
+                  style={radioStyle}
+                />
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* fade overlay + hint */}
+        <div style={overlayStyle} />
+        {!expanded && <div style={hintStyle}>▼ Show more</div>}
+      </div>
+
+      {selectedCategory && (
+        <button style={clearBtnStyle} onClick={() => setSelectedCategory(null)}>
+          Clear
+        </button>
+      )}
+    </aside>
+
+            </div>
+            <SuggestGreenCarousel />
+            
+        </div>
+       
+    );
+}
