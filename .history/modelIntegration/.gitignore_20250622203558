@@ -1,0 +1,45 @@
+# # ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# # ┃        Python / virtualenv      ┃
+# # ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+# # Byte-compiled / optimized / DLL files
+# __pycache__/
+# *.py[cod]
+# *$py.class
+
+# # Virtual environments
+# myenv/
+# venv/
+# env/
+
+# # IDEs / editors
+# .vscode/
+# .idea/
+# *.sublime-project
+# *.sublime-workspace
+
+# # macOS
+# .DS_Store
+
+# # Logs
+# *.log
+
+# # Optional model artifacts (if you prefer to generate them instead of checking in)
+# *.pkl
+# *.h5
+# *.pt
+
+# # ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# # ┃         Node / JavaScript        ┃
+# # ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+# # dependencies
+# node_modules/
+
+# # lock files
+# # (you may want to keep package-lock.json under version control—
+# #  remove the next line if so)
+# package-lock.json
+
+# # local env files
+# .env
