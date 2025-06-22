@@ -36,3 +36,6 @@
     color: #FF9900; /* Change text color on hover */
   }
   
+    .category-hover-menu:hover .category-dropdown {
+      display: block;
+    }

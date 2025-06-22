@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const ProductSchema = new mongoose.Schema({
     // explicit numeric ID alongside Mongo’s _id
     productId: {
-        type: Number,
+        type: String,
         required: true,
         unique: true
     },

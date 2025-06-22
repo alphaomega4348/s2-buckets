@@ -28,6 +28,10 @@ app.get("/", (req, res) => {
   res.send(`app started at ${PORT}`);
 });
 
+app.listen(PORT,(req,res)=>{
+    console.log(`app started at ${PORT}`)
+})
+
 app.use('/group', groupRoutes);
 app.use(login);
 app.use(signup);

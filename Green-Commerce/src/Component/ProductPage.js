@@ -3,6 +3,7 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
 // import products from '../assets/Products';
+import cleaningcloth from "../assets/green products/cleaning/cleaningcloth.png"
 import EcoWheel from './EcoWheel';
 import EcoBadge from './EcoBadge';
 import Headergreen from './Headergreen';
@@ -65,10 +66,9 @@ export default function ProductPage() {
             </div>
         );
     }
-    const filename = product.productImage?.split(/[/\\]/).pop();
-    const src = filename
-        ? `${IMAGE_BASE}/${filename}`
-        : product.productImage;
+   
+    const filename = product.productImage?.split(/[/\\]/).pop() || "";
+    const src = `${IMAGE_BASE}/${filename}`;
     return (
         <div>
 
@@ -87,6 +87,8 @@ export default function ProductPage() {
                     <img
                         src={product.productImage || src}
                         alt={product.productName}
+                        onError={e => e.currentTarget.src = src}
+                        // onError={e => e.currentTarget.src = cleaningcloth}
                         style={{ width: '100%', objectFit: 'contain' }}
                     />
                 </div>

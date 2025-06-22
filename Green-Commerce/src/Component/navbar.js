@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 export default function AmazonNavigationBar() {
   const [showPopover, setShowPopover] = useState(true);
   const [dontShowAgain, setDontShowAgain] = useState(false);
-
+ 
   // Close the popover forever
   const closePopover = () => {
     setDontShowAgain(true);
@@ -147,7 +147,7 @@ export default function AmazonNavigationBar() {
           <Link to="/green" id="itemToTrack" style={greenBtn}>
             Green store
           </Link>
-          {showPopover && !dontShowAgain && (
+          {/* {showPopover && !dontShowAgain && (
             <div style={popover}>
               <div style={triangle} />
               <p style={{ margin: '0 0 8px', fontSize: 12, lineHeight: 1.3 }}>
@@ -158,7 +158,7 @@ export default function AmazonNavigationBar() {
                 Got It
               </button>
             </div>
-          )}
+          )} */}
         </li>
       </ul>
     </nav>
