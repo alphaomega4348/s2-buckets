@@ -46,6 +46,32 @@ import badge4 from '../assets/badge4.png';
     };
   }
 
+const LoadingSpinner = () => (
+  <div style={{
+    padding: 64,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    backgroundColor: '#f3f4f6'
+  }}>
+    <div style={{
+      border: '6px solid #e5e7eb',
+      borderTop: '6px solid #22c55e',
+      borderRadius: '50%',
+      width: 48,
+      height: 48,
+      animation: 'spin 1s linear infinite'
+    }} />
+    <style>{`
+      @keyframes spin {
+        0%   { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `}</style>
+  </div>
+);
+
 export default function Dashboard() {
   // Pull email from localStorage instead of URL
   const email = localStorage.getItem('email');
@@ -58,6 +84,7 @@ export default function Dashboard() {
   const [error, setError]                 = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [carbonModalOpen, setCarbonModalOpen] = useState(false);
+  const [topContributors, setTopContributors] = useState([]);
 
   const badges = [
     { name: 'Eco Rookie',          icon: badge1 },
@@ -66,6 +93,7 @@ export default function Dashboard() {
     { name: 'Planet Guardian',     icon: badge4 },
   ];
   const [totalProductsOrdered, setTotalProductsOrdered] = useState(0);
+  const [badgeScore, setBadgeScore] = useState(0);
 
   useEffect(() => {
     if (!email) {
@@ -81,13 +109,14 @@ export default function Dashboard() {
         if (!res.ok) throw new Error(`Server responded ${res.status}`);
         const json = await res.json();
 
-        setPlasticData(json.plasticReductionList);
+        setPlasticData(json.plasticReductionList || []);
         // Sort months Jan→Dec
         const monthOrder = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        setEcoTrend(json.ecoTrend.sort((a,b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month)));
-        setCategories(json.categoryStats);
-        setTotalCo2Saved(json.totalCo2Saved);
-        setTotalProductsOrdered(json.totalProductsOrdered);
+        setEcoTrend((json.ecoTrend || []).sort((a,b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month)));
+        setCategories(json.categoryStats || []);
+        setTotalCo2Saved(json.totalCo2Saved || 0);
+        setTotalProductsOrdered(json.totalProductsOrdered || 0);
+        setBadgeScore(json.badgeScore || 0);
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -96,10 +125,23 @@ export default function Dashboard() {
       }
     }
 
+    async function fetchLeaderboard() {
+      try {
+        const res = await fetch('http://localhost:8080/top-badge-scores');
+        if (!res.ok) throw new Error('Failed to fetch leaderboard');
+        const data = await res.json();
+        const sortedData = [...data].sort((a, b) => b.totalCo2Saved - a.totalCo2Saved);
+        setTopContributors(sortedData);
+      } catch (err) {
+        console.error('Leaderboard fetch error:', err);
+      }
+    }
+
     loadDashboard();
+    fetchLeaderboard();
   }, [email]);
 
-  if (loading) return <p style={{ padding: 24 }}>Loading dashboard…</p>;
+  if (loading) return <LoadingSpinner />;
   if (error)   return <p style={{ padding: 24, color: 'red' }}>Error: {error}</p>;
 
   const cardStyle = {
@@ -165,11 +207,11 @@ export default function Dashboard() {
     );
   };
 
-  // Compute badge tier dynamically based on totalProductsOrdered
+  // Compute badge tier dynamically based on badgeScore
   let currentBadgeIndex = 0;
-  if (totalProductsOrdered > 200) currentBadgeIndex = 3;
-  else if (totalProductsOrdered > 50) currentBadgeIndex = 2;
-  else if (totalProductsOrdered > 10) currentBadgeIndex = 1;
+  if (badgeScore >= 0.8) currentBadgeIndex = 3;
+  else if (badgeScore >= 0.5) currentBadgeIndex = 2;
+  else if (badgeScore >= 0.2) currentBadgeIndex = 1;
 
   return (
     <div
@@ -249,8 +291,8 @@ export default function Dashboard() {
         <div style={{ ...cardStyle, width: '40%', alignItems: 'center', marginRight: '-5px' }}>
           <div style={titleStyle}>Category Dials</div>
           <div style={{ display: 'flex', gap: 24 }}>
-            {categories.map((c) => (
-              <Dial key={c.label} pct={c.pct} label={c.label} />
+            {categories.map((c, idx) => (
+              <Dial key={c.label || idx} pct={c.pct} label={c.label} />
             ))}
           </div>
         </div>
@@ -372,15 +414,11 @@ export default function Dashboard() {
           Top Eco-Contributors
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {[
-            { name: 'Emma', score: '120 pts' },
-            { name: 'Liam', score: '110 pts' },
-            { name: 'Olivia', score: '105 pts' },
-          ].map((u, idx) => {
+          {topContributors.map((u, idx) => {
             const accentColors = ['#FBBF24', '#9CA3AF', '#D97706'];
             return (
               <div
-                key={u.name}
+                key={u.email}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -407,13 +445,13 @@ export default function Dashboard() {
                       fontSize: 14,
                     }}
                   >
-                    {u.name.slice(0, 2).toUpperCase()}
+                    {u.email.slice(0, 2).toUpperCase()}
                   </div>
                   <span style={{ fontSize: 16, color: '#111' }}>
-                    {idx + 1}. {u.name}
+                    {idx + 1}. {u.email}
                   </span>
                 </div>
-                <span style={{ fontWeight: 600, color: '#111' }}>{u.score}</span>
+                <span style={{ fontWeight: 600, color: '#111' }}>{u.totalCo2Saved ? `${u.totalCo2Saved} kg CO₂` : '—'}</span>
               </div>
             );
           })}
@@ -426,7 +464,12 @@ export default function Dashboard() {
           {/* Medal badge */}
           <img src={badges[currentBadgeIndex].icon} alt="Medal" style={medalStyle}/>
           <h2>Congratulations!</h2>
-          <p>You have placed {totalProductsOrdered} orders.</p>
+          <div style={{ marginTop: 12, fontSize: 18, color: '#374151' }}>
+            Your Eco Score: <strong style={{ color: '#15803d' }}>{(badgeScore * 100).toFixed(0)}%</strong>
+          </div>
+          <div style={{ marginTop: 8, fontSize: 14, color: '#6b7280' }}>
+            This score reflects your sustainability impact through plastic, CO₂, and chemical reductions.
+          </div>
           {/* Confetti elements */}
           <div style={confettiContainerStyle}>
             {[...Array(30)].map((_, i) => <div key={i} style={randomConfettiStyle()}/>)}
