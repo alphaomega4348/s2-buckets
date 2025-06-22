@@ -44,6 +44,10 @@ const UserSchema = new mongoose.Schema({
         type: [EchoPurchase],
         default: []
     },
+    badgeScore: {
+        type: Number,
+        default: 0
+    },
     cart: [{                       // simple in-progress cart
         product: {
             type: mongoose.Schema.Types.ObjectId,
