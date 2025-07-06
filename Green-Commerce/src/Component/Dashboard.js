@@ -111,7 +111,7 @@ export default function Dashboard() {
     async function loadDashboard() {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:8080/user-dashboard?email=${encodeURIComponent(email)}`);
+        const res = await fetch(`http://localhost:9000/user-dashboard?email=${encodeURIComponent(email)}`);
         if (!res.ok) throw new Error(`Server responded ${res.status}`);
         const json = await res.json();
 
@@ -134,7 +134,7 @@ export default function Dashboard() {
 
     async function fetchLeaderboard() {
       try {
-        const res = await fetch('http://localhost:8080/top-badge-scores');
+        const res = await fetch('http://localhost:9000/top-badge-scores');
         if (!res.ok) throw new Error('Failed to fetch leaderboard');
         const data = await res.json();
         const sortedData = [...data].sort((a, b) => b.totalCo2Saved - a.totalCo2Saved);
